@@ -107,7 +107,7 @@ func main() {
 	if args.Version {
 		fmt.Println(version.Full())
 		fmt.Println(mac.GetLinuxMac())
-		fmt.Println(cpuinfo.GetLinuxCpuInfo())
+		fmt.Println(cpuinfo.GetLinuxCpuSN())
 	} else {
 		StartServer()
 	}

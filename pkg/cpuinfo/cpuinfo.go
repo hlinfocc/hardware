@@ -5,7 +5,7 @@ import (
 	"os/exec"
 )
 
-func GetLinuxCpuInfo() string {
+func GetLinuxCpuSN() string {
 	// 执行dmidecode -t 4 |grep ID |sort -u |awk -F':' '{print $2}'命令
 	cmd := exec.Command("bash", "-c", "dmidecode -t 4 |grep ID |sort -u |awk -F':' '{print $2}'")
 	output, err := cmd.Output()
