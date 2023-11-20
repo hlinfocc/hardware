@@ -18,7 +18,7 @@ vet:
 
 
 hardware:
-	env CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)" -o bin/hardware ./
+	env CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)" -o bin/hlinfo-hardware ./
 
 test: gotest
 
@@ -27,4 +27,4 @@ gotest:
 
 	
 clean:
-	rm -f ./bin/hardware
+	rm -f ./bin/hlinfo-hardware

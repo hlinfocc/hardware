@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -26,6 +25,7 @@ type Resp struct {
  */
 type Args struct {
 	Version bool
+	Sn      bool
 }
 
 /**
@@ -34,6 +34,7 @@ type Args struct {
 func initParams() Args {
 	args := Args{}
 	flag.BoolVar(&args.Version, "v", args.Version, "显示版本信息")
+	flag.BoolVar(&args.Sn, "sn", args.Sn, "直接获取CPU序列号及网卡MAC地址信息")
 	flag.Parse()
 	return args
 }
@@ -75,16 +76,17 @@ func HandleServerConn(conn net.Conn) {
 		if read_len == 0 {
 			// 客户端已关闭连接
 			break
-		} else if strings.TrimSpace(string(request[:read_len])) == "timestamp" {
-			daytime := strconv.FormatInt(time.Now().Unix(), 10)
-			conn.Write([]byte(daytime))
+		} else if strings.TrimSpace(string(request[:read_len])) == "SN" {
+			cpusn := cpuinfo.GetLinuxCpuSN()
+			mac := mac.GetLinuxMac()
+			sninfo := cpusn + "" + mac
+			conn.Write([]byte(sninfo))
 		} else {
 			fmt.Println(strings.TrimSpace(string(request[:read_len])))
-			daytime := time.Now().String()
 			rs := Resp{}
 			rs.Code = 200
-			rs.Msg = "获取成功:" + daytime
-			rs.Data = "[{\"name\":\"1\"},{\"name\":\"2\"},{\"name\":\"3\"}]"
+			rs.Msg = "获取成功"
+			rs.Data = "[{\"cpusn\":\"\"},{\"mac\":\"\"},{\"hdd\":\"\"}]"
 			v, _ := json.Marshal(rs)
 			conn.Write([]byte(string(v)))
 		}
@@ -103,11 +105,13 @@ func checkError(err error) {
 func main() {
 	args := initParams()
 
-	// fmt.Println(args)
 	if args.Version {
 		fmt.Println(version.Full())
-		fmt.Println(mac.GetLinuxMac())
-		fmt.Println(cpuinfo.GetLinuxCpuSN())
+	} else if args.Sn {
+		cpusn := cpuinfo.GetLinuxCpuSN()
+		mac := mac.GetLinuxMac()
+		sninfo := cpusn + "" + mac
+		fmt.Println(sninfo)
 	} else {
 		StartServer()
 	}
