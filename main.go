@@ -5,7 +5,9 @@ import (
 	"flag"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -43,7 +45,7 @@ func initParams() Args {
 * 启动Socket服务
  */
 func StartServer() {
-	socketPath := "/tmp/hardware.socket"
+	socketPath := "/var/run/hlinfo-hardware.socket"
 	os.Remove(socketPath)
 	tcpAddr, err := net.ResolveUnixAddr("unix", socketPath)
 	checkError(err)
@@ -102,6 +104,65 @@ func checkError(err error) {
 	}
 }
 
+func checkPortStatus(port int) bool {
+	// 监听 端口
+	listenerPort := fmt.Sprintf(":%d", port)
+	listener, err := net.Listen("tcp", listenerPort)
+	if err != nil {
+		// 如果监听失败，则说明端口已被占用
+		return false
+	}
+	// 关闭监听器
+	defer listener.Close()
+
+	// 如果监听成功，则说明端口未被占用
+	return true
+}
+
+func writePort(port int) {
+	filePath := "/var/run/hlinfo-hardware.port"
+	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		fmt.Println("无法打开文件:", err)
+		return
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(strconv.Itoa(port))
+	if err != nil {
+		fmt.Println("无法写入文件:", err)
+		return
+	}
+}
+
+func StartWebServer() {
+	// 定义处理请求的函数
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		// 获取客户端传递的参数
+		sn := r.FormValue("sn")
+
+		// 根据参数进行相应的响应
+		if sn != "" {
+			cpusn := cpuinfo.GetLinuxCpuSN()
+			mac := mac.GetLinuxMac()
+			sninfo := cpusn + "" + mac
+			fmt.Fprintf(w, sninfo)
+		} else {
+			fmt.Fprintf(w, "Please provide 'sn' parameters.")
+		}
+	}
+	port := 1840
+	for !checkPortStatus(port) {
+		port = port + 1
+	}
+	writePort(port)
+	httpPort := fmt.Sprintf(":%d", port)
+	// 注册处理函数并启动 Web 服务
+	http.HandleFunc("/", handler)
+	http.ListenAndServe(httpPort, nil)
+
+}
+
 func main() {
 	args := initParams()
 
@@ -113,6 +174,7 @@ func main() {
 		sninfo := cpusn + "" + mac
 		fmt.Println(sninfo)
 	} else {
+		go StartWebServer()
 		StartServer()
 	}
 }
