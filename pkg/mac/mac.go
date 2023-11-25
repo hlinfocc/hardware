@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strings"
 )
 
@@ -41,7 +42,67 @@ func GetLinuxMac() string {
 	return macdata
 }
 
+func isVirtualMAC(macAddress string) bool {
+	virtualKeywords := []string{"Virtual", "VMware", "VirtualBox"}
+
+	for _, keyword := range virtualKeywords {
+		if strings.Contains(macAddress, keyword) {
+			return true
+		}
+	}
+	return false
+}
+
+func parseMACAddresses(output string) []string {
+	var macAddresses []string
+
+	lines := strings.Split(output, "\n")
+	for i := 0; i < len(lines); i++ {
+		line := strings.TrimSpace(lines[i])
+		if strings.HasPrefix(line, "Physical Address") || strings.HasPrefix(line, "物理地址") {
+			fields := strings.Fields(line)
+			if len(fields) >= 3 {
+				macAddress := fields[2]
+				if !isVirtualMAC(macAddress) {
+					macAddresses = append(macAddresses, macAddress)
+				}
+			}
+		}
+	}
+
+	return macAddresses
+}
+
 func GetWinMac() string {
+	cmd := exec.Command("ipconfig", "/all")
+	output, err := cmd.Output()
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+	macdata := ""
+	macAddresses := parseMACAddresses(string(output))
+	for _, mac := range macAddresses {
+		macdata = macdata + mac + "\n"
+	}
+	return macdata
+}
+
+func GetMacOSMac() string {
 
 	return ""
+}
+
+func GetCpuSN() string {
+	osType := runtime.GOOS
+	fmt.Println(osType)
+	sndata := ""
+	if osType == "linux" {
+		sndata = GetLinuxMac()
+	} else if osType == "windows" {
+		sndata = GetWinMac()
+	} else if osType == "darwin" {
+		sndata = GetMacOSMac()
+	}
+	return sndata
 }

@@ -2,7 +2,7 @@ export PATH := $(GOPATH)/bin:$(PATH)
 export GO111MODULE=on
 LDFLAGS := -s -w
 
-os-archs=freebsd:386 freebsd:amd64 linux:386 linux:amd64 linux:arm linux:arm64 linux:mips64 linux:mips64le linux:mips:softfloat linux:mipsle:softfloat linux:riscv64
+os-archs=freebsd:386 freebsd:amd64 linux:386 linux:amd64 linux:arm linux:arm64 linux:mips64 linux:mips64le linux:mips:softfloat linux:mipsle:softfloat linux:riscv64 windows:386 windows:amd64 windows:arm64
 
 all: build
 
@@ -18,4 +18,7 @@ app:
 		env CGO_ENABLED=0 GOOS=$${os} GOARCH=$${arch} GOMIPS=$${gomips} go build -trimpath -ldflags "$(LDFLAGS)" -o ./dist/hlinfo-hardware_$${target_suffix} ./;\
 		echo "Build $${os}-$${arch} done";\
 	)
+	@mv ./dist/hlinfo-hardware_windows_386 ./dist/hlinfo-hardware_windows_386.exe
+	@mv ./dist/hlinfo-hardware_windows_amd64 ./dist/hlinfo-hardware_windows_amd64.exe
+	@mv ./dist/hlinfo-hardware_windows_arm64 ./dist/hlinfo-hardware_windows_arm64.exe
 

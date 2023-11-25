@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -79,7 +80,7 @@ func HandleServerConn(conn net.Conn) {
 			// 客户端已关闭连接
 			break
 		} else if strings.TrimSpace(string(request[:read_len])) == "SN" {
-			cpusn := cpuinfo.GetLinuxCpuSN()
+			cpusn := cpuinfo.GetCpuSN()
 			mac := mac.GetLinuxMac()
 			sninfo := cpusn + "" + mac
 			conn.Write([]byte(sninfo))
@@ -143,12 +144,12 @@ func StartWebServer() {
 
 		// 根据参数进行相应的响应
 		if sn != "" {
-			cpusn := cpuinfo.GetLinuxCpuSN()
+			cpusn := cpuinfo.GetCpuSN()
 			mac := mac.GetLinuxMac()
 			sninfo := cpusn + "" + mac
 			fmt.Fprintf(w, sninfo)
 		} else {
-			fmt.Fprintf(w, "Please provide 'sn' parameters.")
+			fmt.Fprintf(w, "Error")
 		}
 	}
 	port := 1840
@@ -169,10 +170,11 @@ func main() {
 	if args.Version {
 		fmt.Println(version.Full())
 	} else if args.Sn {
-		cpusn := cpuinfo.GetLinuxCpuSN()
+		cpusn := cpuinfo.GetCpuSN()
 		mac := mac.GetLinuxMac()
 		sninfo := cpusn + "" + mac
 		fmt.Println(sninfo)
+		fmt.Println("Operating System:", runtime.GOOS)
 	} else {
 		go StartWebServer()
 		StartServer()
