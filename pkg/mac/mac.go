@@ -59,13 +59,19 @@ func parseMACAddresses(output string) []string {
 	lines := strings.Split(output, "\n")
 	for i := 0; i < len(lines); i++ {
 		line := strings.TrimSpace(lines[i])
+		// fmt.Println(line)
+		if strings.HasPrefix(line, "Description") || strings.HasPrefix(line, "描述") {
+			if !isVirtualMAC(line) {
+				i += 2
+				continue
+			}
+		}
 		if strings.HasPrefix(line, "Physical Address") || strings.HasPrefix(line, "物理地址") {
-			fields := strings.Fields(line)
-			if len(fields) >= 3 {
-				macAddress := fields[2]
-				if !isVirtualMAC(macAddress) {
-					macAddresses = append(macAddresses, macAddress)
-				}
+			// fields := strings.Fields(line)
+			lineItem := strings.Split(line, ":")
+			if len(lineItem) > 1 {
+				macAddress := lineItem[1]
+				macAddresses = append(macAddresses, macAddress)
 			}
 		}
 	}
@@ -74,7 +80,8 @@ func parseMACAddresses(output string) []string {
 }
 
 func GetWinMac() string {
-	cmd := exec.Command("ipconfig", "/all")
+	// cmd := exec.Command("ipconfig", "/all")
+	cmd := exec.Command("cmd", "/c", "chcp 65001 & ipconfig /all")
 	output, err := cmd.Output()
 	if err != nil {
 		fmt.Println(err)
@@ -83,7 +90,10 @@ func GetWinMac() string {
 	macdata := ""
 	macAddresses := parseMACAddresses(string(output))
 	for _, mac := range macAddresses {
-		macdata = macdata + mac + "\n"
+		macOk := strings.Trim(mac, " ")
+		if len(mac) > 0 {
+			macdata = macdata + macOk + "\n"
+		}
 	}
 	return macdata
 }
@@ -93,16 +103,15 @@ func GetMacOSMac() string {
 	return ""
 }
 
-func GetCpuSN() string {
+func GetMacAddr() string {
 	osType := runtime.GOOS
-	fmt.Println(osType)
-	sndata := ""
+	macdata := ""
 	if osType == "linux" {
-		sndata = GetLinuxMac()
+		macdata = GetLinuxMac()
 	} else if osType == "windows" {
-		sndata = GetWinMac()
+		macdata = GetWinMac()
 	} else if osType == "darwin" {
-		sndata = GetMacOSMac()
+		macdata = GetMacOSMac()
 	}
-	return sndata
+	return macdata
 }

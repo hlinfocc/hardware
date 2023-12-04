@@ -68,7 +68,6 @@ func GetMacOSCpuSN() string {
 
 func GetCpuSN() string {
 	osType := runtime.GOOS
-	fmt.Println(osType)
 	sndata := ""
 	if osType == "linux" {
 		sndata = GetLinuxCpuSN()
