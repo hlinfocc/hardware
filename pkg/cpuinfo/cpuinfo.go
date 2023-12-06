@@ -18,7 +18,7 @@ func GetLinuxCpuSN() string {
 	sndata := ""
 	lines := strings.Split(string(output), "\n")
 	for i := 0; i < len(lines); i++ {
-		line := strings.Trim(lines[i], " ")
+		line := strings.TrimSpace(lines[i])
 		if len(line) > 0 {
 			sndata = sndata + line + "\n"
 		}
@@ -37,7 +37,7 @@ func GetWinCpuSN() string {
 	sndata := ""
 	lines := strings.Split(string(output), "\n")
 	for i := 0; i < len(lines); i++ {
-		line := strings.Trim(lines[i], " ")
+		line := strings.TrimSpace(lines[i])
 		if strings.Contains(line, "ProcessorId") {
 			continue
 		}

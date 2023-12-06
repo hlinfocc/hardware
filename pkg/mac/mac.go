@@ -59,6 +59,9 @@ func parseMACAddresses(output string) []string {
 	lines := strings.Split(output, "\n")
 	for i := 0; i < len(lines); i++ {
 		line := strings.TrimSpace(lines[i])
+		if len(line) <= 0 {
+			continue
+		}
 		// fmt.Println(line)
 		if strings.HasPrefix(line, "Description") || strings.HasPrefix(line, "描述") {
 			if !isVirtualMAC(line) {
@@ -70,7 +73,7 @@ func parseMACAddresses(output string) []string {
 			// fields := strings.Fields(line)
 			lineItem := strings.Split(line, ":")
 			if len(lineItem) > 1 {
-				macAddress := lineItem[1]
+				macAddress := strings.TrimSpace(lineItem[1])
 				macAddresses = append(macAddresses, macAddress)
 			}
 		}
@@ -90,8 +93,8 @@ func GetWinMac() string {
 	macdata := ""
 	macAddresses := parseMACAddresses(string(output))
 	for _, mac := range macAddresses {
-		macOk := strings.Trim(mac, " ")
-		if len(mac) > 0 {
+		macOk := strings.TrimSpace(mac)
+		if len(macOk) > 0 {
 			macdata = macdata + macOk + "\n"
 		}
 	}
