@@ -42,7 +42,6 @@ func GetWinCpuSN() string {
 			continue
 		}
 		sndata = sndata + line + "\n"
-
 	}
 	return sndata
 }

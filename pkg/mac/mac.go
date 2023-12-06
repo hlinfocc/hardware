@@ -62,7 +62,7 @@ func parseMACAddresses(output string) []string {
 		if len(line) <= 0 {
 			continue
 		}
-		// fmt.Println(line)
+
 		if strings.HasPrefix(line, "Description") || strings.HasPrefix(line, "描述") {
 			if !isVirtualMAC(line) {
 				i += 2
